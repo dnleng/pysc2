@@ -16,7 +16,10 @@
 import distutils.command.build
 from setuptools import setup
 
-description = """PySC2 - StarCraft II Learning Environment
+description = """PySC2LiU
+
+PySC2LiU is a fork of DeepMind's PySC2 component with a modified GUI for
+training students in building PyCommandCenter agents.
 
 PySC2 is DeepMind's Python component of the StarCraft II Learning Environment
 (SC2LE). It exposes Blizzard Entertainment's StarCraft II Machine Learning API
@@ -43,16 +46,16 @@ class BuildCommand(distutils.command.build.build):
 
 
 setup(
-    name='PySC2',
-    version='4.0.0',
-    description='Starcraft II environment and library for training agents.',
+    name='PySC2LiU',
+    version='0.0.1',
+    description='Starcraft II environment and library for training students.',
     long_description=description,
-    author='DeepMind',
-    author_email='pysc2@deepmind.com',
+    author='Daniel de Leng',
+    author_email='daniel.de.leng@liu.se',
     cmdclass={'build': BuildCommand},
     license='Apache License, Version 2.0',
     keywords='StarCraft AI',
-    url='https://github.com/deepmind/pysc2',
+    #url='https://github.com/deepmind/pysc2',
     packages=[
         'pysc2',
         'pysc2.agents',
@@ -64,21 +67,21 @@ setup(
         'pysc2.tests',
     ],
     install_requires=[
-        'absl-py>=0.1.0',
-        'deepdiff',
-        'dm_env',
-        'enum34',
-        'mock',
-        'mpyq',
-        'numpy>=1.10',
-        'portpicker>=1.2.0',
-        'protobuf>=2.6',
-        'pygame',
-        'requests',
-        's2clientprotocol>=4.10.1.75800.0',
-        's2protocol',
-        'sk-video',
-        'websocket-client',
+        'absl-py==2.1.0',
+        'deepdiff==7.0.1',
+        'dm-env==1.6',
+        'enum34==1.1.10',
+        'mock==5.1.0',
+        'mpyq==0.2.5',
+        'numpy==2.0.0',
+        'portpicker==1.6.0',
+        'protobuf==3.20.3',
+        'pygame==2.6.0',
+        'requests==2.32.3',
+        's2clientprotocol==5.0.12.91115.0',
+        's2protocol==5.0.12.91115.0',
+        'sk-video==1.1.10',
+        'websocket-client==1.8.0,',
     ],
     entry_points={
         'console_scripts': [
@@ -99,6 +102,7 @@ setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
     ],
 )

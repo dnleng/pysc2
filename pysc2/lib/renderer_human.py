@@ -299,7 +299,7 @@ class RendererHuman(object):
   ]
 
   def __init__(self, fps=22.4, step_mul=1, render_sync=False,
-               render_feature_grid=True, video=None):
+               render_feature_grid=True, video=None, liu_mode=True):
     """Create a renderer for use by humans.
 
     Make sure to call `init` with the game info, or just use `run`.
@@ -311,6 +311,7 @@ class RendererHuman(object):
       render_feature_grid: When RGB and feature layers are available, whether
           to render the grid of feature layers.
       video: A filename to write the video to. Implicitly enables render_sync.
+      liu_mode: Whether to run a bare version of the viewer.
     """
     self._fps = fps
     self._step_mul = step_mul
@@ -318,7 +319,7 @@ class RendererHuman(object):
     self._raw_actions = False
     self._render_player_relative = False
     self._render_rgb = None
-    self._render_feature_grid = render_feature_grid
+    self._render_feature_grid = render_feature_grid and not liu_mode
     self._window = None
     self._window_scale = 0.75
     self._obs_queue = queue.Queue()
@@ -331,6 +332,7 @@ class RendererHuman(object):
     self._last_game_loop = 0
     self._name_lengths = {}
     self._video_writer = video_writer.VideoWriter(video, fps) if video else None
+    self._liu_mode = liu_mode
 
   def close(self):
     if self._obs_queue:
@@ -382,6 +384,8 @@ class RendererHuman(object):
       self._render_rgb = True
     else:
       self._rgb_screen_px = self._rgb_minimap_px = None
+    if self._liu_mode:
+      self._render_rgb = False
 
     if not self._feature_screen_px and not self._rgb_screen_px:
       raise ValueError("Nothing to render.")
@@ -448,6 +452,8 @@ class RendererHuman(object):
     # of the sub-surfaces defined below.
     self._window = pygame.display.set_mode(window_size_px, 0, 32)
     pygame.display.set_caption("Starcraft Viewer")
+    if self._liu_mode:
+      pygame.display.set_caption("Starcraft Viewer (LiU Mode)")
 
     # The sub-surfaces that the various draw functions will draw to.
     self._surfaces = []

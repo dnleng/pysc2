@@ -32,6 +32,7 @@ from pysc2.lib import stopwatch
 from s2clientprotocol import sc2api_pb2 as sc_pb
 
 FLAGS = flags.FLAGS
+flags.DEFINE_bool("classic", False, "Whether to run a classic PySC2 version of the viewer.")
 flags.DEFINE_bool("render", True, "Whether to render with pygame.")
 flags.DEFINE_bool("realtime", False, "Whether to run in realtime mode.")
 flags.DEFINE_bool("full_screen", False, "Whether to run full screen.")
@@ -45,7 +46,7 @@ point_flag.DEFINE_point("feature_minimap_size", "64",
                         "Resolution for minimap feature layers.")
 flags.DEFINE_integer("feature_camera_width", 24,
                      "Width of the feature layer camera.")
-point_flag.DEFINE_point("rgb_screen_size", "256,192",
+point_flag.DEFINE_point("rgb_screen_size", "1024,768",
                         "Resolution for rendered screen.")
 point_flag.DEFINE_point("rgb_minimap_size", "128",
                         "Resolution for rendered minimap.")
@@ -190,7 +191,8 @@ def main(unused_argv):
     if FLAGS.render:
       renderer = renderer_human.RendererHuman(
           fps=FLAGS.fps, step_mul=FLAGS.step_mul,
-          render_sync=FLAGS.render_sync, video=FLAGS.video)
+          render_sync=FLAGS.render_sync, video=FLAGS.video, 
+          liu_mode=not FLAGS.classic)
       renderer.run(
           run_config, controller, max_game_steps=FLAGS.max_game_steps,
           game_steps_per_episode=max_episode_steps,

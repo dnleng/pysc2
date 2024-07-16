@@ -335,8 +335,9 @@ class SC2Env(environment.Base):
 
     # Actually launch the game processes.
     self._sc2_procs = [
-        self._run_config.start(extra_ports=self._ports,
-                               want_rgb=interface.HasField("render"))
+        #self._run_config.start(extra_ports=self._ports,
+        #                       want_rgb=interface.HasField("render"))
+        self._run_config.start(want_rgb=interface.HasField("render"))
         for interface in self._interface_options]
     self._controllers = [p.controller for p in self._sc2_procs]
 
