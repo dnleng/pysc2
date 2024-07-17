@@ -26,6 +26,7 @@ FLAGS = flags.FLAGS
 
 def get(version=None):
   """Get the config chosen by the flags."""
+  print("get")
   configs = {c.name(): c
              for c in lib.RunConfig.all_subclasses() if c.priority()}
 
@@ -33,9 +34,11 @@ def get(version=None):
     raise sc_process.SC2LaunchError("No valid run_configs found.")
 
   if FLAGS.sc2_run_config is None:  # Find the highest priority as default.
+    print(f"Configuration: {type(max(configs.values(), key=lambda c: c.priority()))}")
     return max(configs.values(), key=lambda c: c.priority())(version=version)
 
   try:
+    print(f"Configuration: {type(configs[FLAGS.sc2_run_config])}")
     return configs[FLAGS.sc2_run_config](version=version)
   except KeyError:
     raise sc_process.SC2LaunchError(

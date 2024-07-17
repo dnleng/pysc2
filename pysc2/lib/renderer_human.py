@@ -332,7 +332,12 @@ class RendererHuman(object):
     self._last_game_loop = 0
     self._name_lengths = {}
     self._video_writer = video_writer.VideoWriter(video, fps) if video else None
+
     self._liu_mode = liu_mode
+    self._camera_loc_next = point.origin
+
+  def is_observer(self):
+    return self._obs.observation.player_common.player_id in (0, 16)  # observer
 
   def close(self):
     if self._obs_queue:
@@ -453,7 +458,7 @@ class RendererHuman(object):
     self._window = pygame.display.set_mode(window_size_px, 0, 32)
     pygame.display.set_caption("Starcraft Viewer")
     if self._liu_mode:
-      pygame.display.set_caption("Starcraft Viewer (LiU Mode)")
+      pygame.display.set_caption(f"Starcraft Viewer (LiU Mode, {platform.system()})")
 
     # The sub-surfaces that the various draw functions will draw to.
     self._surfaces = []
@@ -865,14 +870,19 @@ class RendererHuman(object):
       elif event.type == pygame.MOUSEBUTTONDOWN:
         mouse_pos = self.get_mouse_pos(event.pos)
         if event.button == MouseButtons.LEFT and mouse_pos:
+          print(f"Left click: {mouse_pos}")
           if self._queued_action:
+            print(f"Queued action: {self._queued_action}")
             controller.act(self.unit_action(
                 self._queued_action, mouse_pos, shift))
           elif mouse_pos.surf.surf_type & SurfType.MINIMAP:
+            print(f"Move camera based on minimap")
+            self._camera_loc_next = mouse_pos.world_pos
             controller.act(self.camera_action(mouse_pos))
             controller.observer_act(self.camera_action_observer_pt(
                 mouse_pos.world_pos))
           else:
+            print(f"Selection start")
             self._select_start = mouse_pos
         elif event.button == MouseButtons.RIGHT:
           if self._queued_action:
@@ -1522,6 +1532,8 @@ class RendererHuman(object):
 
   @sw.decorate
   def draw_base_map(self, surf):
+    print(f"Observer: {self.is_observer()}")
+
     """Draw the base map."""
     hmap_feature = features.SCREEN_FEATURES.height_map
     hmap = hmap_feature.unpack(self._obs.observation)
@@ -1551,10 +1563,11 @@ class RendererHuman(object):
       player_rel_color = player_rel_feature.color(player_rel)
       out[player_rel_mask, :] = player_rel_color[player_rel_mask, :]
 
-    visibility = features.SCREEN_FEATURES.visibility_map.unpack(
-        self._obs.observation)
-    visibility_fade = np.array([[0.5] * 3, [0.75]*3, [1]*3])
-    out *= visibility_fade[visibility]
+    if not self.is_observer():
+      visibility = features.SCREEN_FEATURES.visibility_map.unpack(
+          self._obs.observation)
+      visibility_fade = np.array([[0.5] * 3, [0.75]*3, [1]*3])
+      out *= visibility_fade[visibility]
 
     surf.blit_np_array(out)
 
@@ -1588,16 +1601,17 @@ class RendererHuman(object):
       player_mask = player_data > 0
       player_color = player_feature.color(player_data)
 
-      visibility = features.MINIMAP_FEATURES.visibility_map.unpack(
-          self._obs.observation)
-      visibility_fade = np.array([[0.5] * 3, [0.75]*3, [1]*3])
-
       # Compose and color the different layers.
       out = hmap_color * 0.6
       out[creep_mask, :] = (0.4 * out[creep_mask, :] +
                             0.6 * creep_color[creep_mask, :])
       out[player_mask, :] = player_color[player_mask, :]
-      out *= visibility_fade[visibility]
+
+      if not self.is_observer():
+        visibility = features.MINIMAP_FEATURES.visibility_map.unpack(
+          self._obs.observation)
+        visibility_fade = np.array([[0.5] * 3, [0.75]*3, [1]*3])
+        out *= visibility_fade[visibility]
 
       # Render the bit of the composited layers that actually correspond to the
       # map. This isn't all of it on non-square maps.
@@ -1718,8 +1732,14 @@ class RendererHuman(object):
     start_time = time.time()
     self._obs = obs
     self.check_valid_queued_action()
-    self._update_camera(point.Point.build(
+    #camera_loc_next = point.Point.build(self._obs.observation.raw_data.player.camera)
+    if not self.is_observer():
+      #print(f"Setting camera to: {camera_loc_next}")
+      self._update_camera(point.Point.build(
         self._obs.observation.raw_data.player.camera))
+    else:
+      #print(f"Overriding camera location observation with {self._camera_loc_next}")
+      self._update_camera(self._camera_loc_next)
 
     for surf in self._surfaces:
       # Render that surface.
