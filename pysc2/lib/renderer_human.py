@@ -1532,11 +1532,14 @@ class RendererHuman(object):
 
   @sw.decorate
   def draw_base_map(self, surf):
-    print(f"Observer: {self.is_observer()}")
+    #print(f"Observer: {self.is_observer()}")
 
     """Draw the base map."""
     hmap_feature = features.SCREEN_FEATURES.height_map
+    #print(hmap_feature)
+
     hmap = hmap_feature.unpack(self._obs.observation)
+    #print(f"Shape screen hmap: {hmap.shape}")
     if not hmap.any():
       hmap = hmap + 100
     hmap_color = hmap_feature.color(hmap)
@@ -1582,6 +1585,7 @@ class RendererHuman(object):
     else:  # Render it manually from feature layer data.
       hmap_feature = features.MINIMAP_FEATURES.height_map
       hmap = hmap_feature.unpack(self._obs.observation)
+      #print(f"Shape minimap hmap: {hmap.shape}")
       if not hmap.any():
         hmap = hmap + 100
       hmap_color = hmap_feature.color(hmap)
